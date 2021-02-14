@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/oussama4/commentify/config"
 	"github.com/oussama4/commentify/model"
@@ -39,10 +40,16 @@ type SqliteStore struct {
 	db *sql.DB
 }
 
-func CreateStore(dbConfig config.Store) (store.Store, error) {
+func Create(dbConfig config.Store) (store.Store, error) {
 	db, err := sql.Open("sqlite", dbConfig.Dsn)
 	if err != nil {
 		return nil, err
+	}
+
+	// create tables
+	_, err = db.Exec(schema)
+	if err != nil {
+		return nil, fmt.Errorf("could not create databse schema %w", err)
 	}
 
 	s := &SqliteStore{db}
