@@ -3,5 +3,5 @@ package model
 type User struct {
 	Id    string
 	Name  string
-	email string
+	Email string
 }
