@@ -8,14 +8,15 @@ import (
 	"github.com/oussama4/commentify/store"
 )
 
-func Routes(s store.Store) http.Handler {
+func Routes(store store.Store) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
 
-	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
+	u := &User{
+		store: store,
+	}
+	r.Mount("/users", u.routes())
 
 	return r
 }
