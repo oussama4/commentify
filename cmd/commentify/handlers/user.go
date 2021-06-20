@@ -20,8 +20,24 @@ type UserInput struct {
 func (u *User) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/", u.Create)
+	r.Get("/{userId}", u.Get)
 
 	return r
+}
+
+func (u *User) Get(w http.ResponseWriter, r *http.Request) {
+	userId := chi.URLParam(r, "userId")
+	user, err := u.store.GetUser(userId)
+	if err != nil {
+		if err == store.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	web.Json(w, user)
 }
 
 func (u *User) Create(w http.ResponseWriter, r *http.Request) {
