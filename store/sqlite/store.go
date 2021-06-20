@@ -63,7 +63,7 @@ func (s *SqliteStore) GetComment(id string) (*model.Comment, error) {
 	err := s.db.QueryRow(q, id).Scan(&c.Id, &c.Body, &c.ParentId, &c.UserId, &c.ThreadId, &c.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("comment")
+			return nil, store.ErrNotFound
 		}
 		return nil, err
 	}
@@ -79,6 +79,19 @@ func (s *SqliteStore) CreateThread(url, domain, title string) (string, error) {
 	}
 
 	return id, nil
+}
+
+func (s *SqliteStore) GetUser(id string) (*model.User, error) {
+	q := "SELECT * FROM users WHERE Id=?"
+	u := &model.User{}
+	err := s.db.QueryRow(q, id).Scan(&u.Id, &u.Name, &u.Email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrNotFound
+		}
+		return nil, err
+	}
+	return u, nil
 }
 
 func (s *SqliteStore) CreateUser(name, email string) (string, error) {
@@ -127,7 +140,7 @@ func (s *SqliteStore) GetThread(id string) (*model.Thread, error) {
 	err := s.db.QueryRow(q, &id).Scan(&t.Id, &t.Url, &t.Domain, &t.Title)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("thread")
+			return nil, store.ErrNotFound
 		}
 		return nil, err
 	}

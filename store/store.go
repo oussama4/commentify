@@ -1,6 +1,8 @@
 package store
 
-import "github.com/oussama4/commentify/model"
+import (
+	"github.com/oussama4/commentify/model"
+)
 
 type Store interface {
 	GetComment(id string) (*model.Comment, error)
@@ -11,5 +13,6 @@ type Store interface {
 	ListChildComments(threadId, parentId string) ([]*model.CommentOutput, error)
 	GetThread(id string) (*model.Thread, error)
 	CreateThread(url, domain, title string) (string, error)
+	GetUser(id string) (*model.User, error)
 	CreateUser(name, email string) (string, error)
 }
