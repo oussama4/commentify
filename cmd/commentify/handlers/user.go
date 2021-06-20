@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/oussama4/commentify/store"
+	"github.com/oussama4/commentify/web"
 )
 
 type User struct {
@@ -35,11 +35,5 @@ func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	buf := &bytes.Buffer{}
-	enc := json.NewEncoder(buf)
-	if err := enc.Encode(userId); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Write(buf.Bytes())
+	web.Json(w, userId)
 }
