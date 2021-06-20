@@ -17,8 +17,10 @@ func Routes(store store.Store) http.Handler {
 		store: store,
 	}
 	th := &Thread{store: store}
+	c := &Comment{store: store}
 	r.Mount("/users", u.routes())
 	r.Mount("/threads", th.routes())
+	r.Mount("/comments", c.routes())
 
 	return r
 }

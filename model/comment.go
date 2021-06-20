@@ -1,19 +1,17 @@
 package model
 
-import "time"
-
 type Comment struct {
 	Id        string
 	Body      string
 	ParentId  string
 	UserId    string
 	ThreadId  string
-	CreatedAt time.Time
+	CreatedAt string
 }
 
 type CommentOutput struct {
 	Id        string
 	Body      string
-	CreatedAt time.Time
+	CreatedAt string
 	Author    User
 }
