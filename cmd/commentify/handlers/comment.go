@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,7 +11,8 @@ import (
 )
 
 type Comment struct {
-	store store.Store
+	store  store.Store
+	logger *log.Logger
 }
 
 type CommentInput struct {
@@ -24,6 +26,8 @@ func (c *Comment) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/", c.Create)
 	r.Get("/{commentId}", c.Get)
+	r.Get("/thread/{threadId}", c.List)
+	r.Get("/thread/{threadId}/{parentId}", c.List)
 
 	return r
 }
@@ -56,4 +60,26 @@ func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	web.Json(w, comment)
+}
+
+func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
+	threadId := chi.URLParam(r, "threadId")
+	parentId := chi.URLParam(r, "parentId")
+	if parentId == "" {
+		comments, err := c.store.ListComments(threadId)
+		if err != nil {
+			c.logger.Println(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		web.Json(w, comments)
+	} else {
+		comments, err := c.store.ListChildComments(threadId, parentId)
+		if err != nil {
+			c.logger.Println(err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		web.Json(w, comments)
+	}
 }
