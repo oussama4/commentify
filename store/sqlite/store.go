@@ -137,7 +137,7 @@ func (s *SqliteStore) DeleteComment(id string) error {
 func (s *SqliteStore) GetThread(id string) (*model.Thread, error) {
 	q := "SELECT * FROM threads WHERE Id=?"
 	t := &model.Thread{}
-	err := s.db.QueryRow(q, &id).Scan(&t.Id, &t.Url, &t.Domain, &t.Title)
+	err := s.db.QueryRow(q, id).Scan(&t.Id, &t.Url, &t.Domain, &t.Title)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.ErrNotFound
@@ -152,9 +152,9 @@ func (s *SqliteStore) ListComments(threadId string) ([]*model.CommentOutput, err
 	q := `SELECT c.Id, c.Body, c.CreatedAt, u.Id, u.Name, u.Email
 		FROM comments c
 		INNER JOIN users u ON c.UserId = u.Id
-		WHERE c.threadId=?`
+		WHERE c.ThreadId=?`
 
-	return s.listComments(q, &threadId)
+	return s.listComments(q, threadId)
 }
 
 func (s *SqliteStore) ListChildComments(threadId, parentId string) ([]*model.CommentOutput, error) {
@@ -163,17 +163,17 @@ func (s *SqliteStore) ListChildComments(threadId, parentId string) ([]*model.Com
 		INNER JOIN users u ON c.UserId = u.Id
 		WHERE c.ThreadId=? AND c.ParentId=?`
 
-	return s.listComments(q, &threadId, &parentId)
+	return s.listComments(q, threadId, parentId)
 }
 
 func (s *SqliteStore) listComments(query string, dest ...interface{}) ([]*model.CommentOutput, error) {
-	rows, err := s.db.Query(query, dest)
+	rows, err := s.db.Query(query, dest...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	out := make([]*model.CommentOutput, 1)
+	out := make([]*model.CommentOutput, 0)
 	for rows.Next() {
 		o := &model.CommentOutput{}
 		if err := rows.Scan(&o.Id, &o.Body, &o.CreatedAt, &o.Author.Id, &o.Author.Name, &o.Author.Email); err != nil {
