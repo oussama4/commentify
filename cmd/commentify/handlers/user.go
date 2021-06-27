@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,7 +11,8 @@ import (
 )
 
 type User struct {
-	store store.Store
+	store  store.Store
+	logger *log.Logger
 }
 
 type UserInput struct {

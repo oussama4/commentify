@@ -3,10 +3,8 @@ package main
 import (
 	"flag"
 	"log"
-	"net/http"
 	"os"
 
-	"github.com/oussama4/commentify/cmd/commentify/handlers"
 	"github.com/oussama4/commentify/config"
 	"github.com/oussama4/commentify/store/sqlite"
 )
@@ -33,9 +31,11 @@ func main() {
 	// start server
 	l.Println("starting server")
 
-	s := http.Server{
-		Addr:    cfg.Server.Address,
-		Handler: handlers.Routes(store),
+	app := application{
+		config: cfg,
+		logger: l,
+		store:  store,
 	}
-	l.Fatal(s.ListenAndServe())
+
+	app.start()
 }
