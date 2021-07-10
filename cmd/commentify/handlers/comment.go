@@ -26,8 +26,7 @@ func (c *Comment) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/", c.Create)
 	r.Get("/{commentId}", c.Get)
-	r.Get("/thread/{threadId}", c.List)
-	r.Get("/thread/{threadId}/{parentId}", c.List)
+	r.Get("/", c.List)
 
 	return r
 }
@@ -63,23 +62,18 @@ func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
-	threadId := chi.URLParam(r, "threadId")
-	parentId := chi.URLParam(r, "parentId")
-	if parentId == "" {
-		comments, err := c.store.ListComments(threadId)
-		if err != nil {
-			c.logger.Println(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		web.Json(w, comments)
-	} else {
-		comments, err := c.store.ListChildComments(threadId, parentId)
-		if err != nil {
-			c.logger.Println(err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		web.Json(w, comments)
+	qs := r.URL.Query()
+	threadId := web.ReadString(qs, "thread", "")
+	parentId := web.ReadString(qs, "parent", "")
+	page, _ := web.ReadInt(qs, "page", 0)
+	pageSize, _ := web.ReadInt(qs, "page_size", 0)
+
+	comments, err := c.store.ListComments(threadId, parentId, page, pageSize)
+	if err != nil {
+		c.logger.Println(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Range", "comments 0-10/100")
+	web.Json(w, comments)
 }
