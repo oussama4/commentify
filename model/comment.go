@@ -1,17 +1,17 @@
 package model
 
 type Comment struct {
-	Id        string
-	Body      string
-	ParentId  string
-	UserId    string
-	ThreadId  string
-	CreatedAt string
+	Id        string `json:"id"`
+	Body      string `json:"body"`
+	ParentId  string `json:"parentId"`
+	UserId    string `json:"userId"`
+	ThreadId  string `json:"threadId"`
+	CreatedAt string `json:"createdAt"`
 }
 
 type CommentOutput struct {
 	Id        string `json:"id"`
 	Body      string `json:"body"`
-	CreatedAt string `json:"createAt"`
+	CreatedAt string `json:"createdAt"`
 	Author    User   `json:"user"`
 }
