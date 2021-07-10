@@ -81,6 +81,26 @@ func (s *SqliteStore) CreateThread(url, domain, title string) (string, error) {
 	return id, nil
 }
 
+func (s *SqliteStore) ListUsers(page int, pageSize int) ([]model.User, error) {
+	q := "SELECT * FROM users LIMIT ? OFFSET ?"
+	rows, err := s.db.Query(q, pageSize, (page-1)*pageSize)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]model.User, 0)
+	for rows.Next() {
+		u := model.User{}
+		if err := rows.Scan(&u.Id, &u.Name, &u.Email); err != nil {
+			return nil, err
+		}
+		out = append(out, u)
+	}
+
+	return out, nil
+}
+
 func (s *SqliteStore) GetUser(id string) (*model.User, error) {
 	q := "SELECT * FROM users WHERE Id=?"
 	u := &model.User{}
@@ -148,7 +168,7 @@ func (s *SqliteStore) GetThread(id string) (*model.Thread, error) {
 	return t, nil
 }
 
-func (s *SqliteStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]*model.CommentOutput, error) {
+func (s *SqliteStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]model.CommentOutput, error) {
 	q := `SELECT c.Id, c.Body, c.CreatedAt, u.Id, u.Name, u.Email
 		FROM comments c
 		INNER JOIN users u ON c.UserId = u.Id`
@@ -167,25 +187,16 @@ func (s *SqliteStore) ListComments(threadId string, parentId string, page int, p
 	return s.listComments(q, pageSize, (page-1)*pageSize)
 }
 
-func (s *SqliteStore) ListChildComments(threadId, parentId string) ([]*model.CommentOutput, error) {
-	q := `SELECT c.Id, c.Body, c.CreatedAt, u.Id, u.Name, u.Email
-		FROM comments c
-		INNER JOIN users u ON c.UserId = u.Id
-		WHERE c.ThreadId=? AND c.ParentId=?`
-
-	return s.listComments(q, threadId, parentId)
-}
-
-func (s *SqliteStore) listComments(query string, dest ...interface{}) ([]*model.CommentOutput, error) {
+func (s *SqliteStore) listComments(query string, dest ...interface{}) ([]model.CommentOutput, error) {
 	rows, err := s.db.Query(query, dest...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	out := make([]*model.CommentOutput, 0)
+	out := make([]model.CommentOutput, 0)
 	for rows.Next() {
-		o := &model.CommentOutput{}
+		o := model.CommentOutput{}
 		if err := rows.Scan(&o.Id, &o.Body, &o.CreatedAt, &o.Author.Id, &o.Author.Name, &o.Author.Email); err != nil {
 			return nil, err
 		}

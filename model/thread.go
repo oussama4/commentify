@@ -1,8 +1,8 @@
 package model
 
 type Thread struct {
-	Id     string
-	Url    string
-	Domain string
-	Title  string
+	Id     string `json:"id"`
+	Url    string `json:"url"`
+	Domain string `json:"domain"`
+	Title  string `json:"title"`
 }
