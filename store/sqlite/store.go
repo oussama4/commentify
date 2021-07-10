@@ -148,13 +148,23 @@ func (s *SqliteStore) GetThread(id string) (*model.Thread, error) {
 	return t, nil
 }
 
-func (s *SqliteStore) ListComments(threadId string) ([]*model.CommentOutput, error) {
+func (s *SqliteStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]*model.CommentOutput, error) {
 	q := `SELECT c.Id, c.Body, c.CreatedAt, u.Id, u.Name, u.Email
 		FROM comments c
-		INNER JOIN users u ON c.UserId = u.Id
-		WHERE c.ThreadId=?`
+		INNER JOIN users u ON c.UserId = u.Id`
 
-	return s.listComments(q, threadId)
+	if threadId != "" && parentId == "" {
+		q = fmt.Sprint(q, " WHERE c.ThreadId=? LIMIT ? OFFSET ?")
+		fmt.Println(q)
+		return s.listComments(q, threadId, pageSize, (page-1)*pageSize)
+	} else if parentId != "" {
+		q = fmt.Sprint(q, " WHERE c.ThreadId=? AND c.ParentId=? LIMIT ? OFFSET ?")
+		fmt.Println(q)
+		return s.listComments(q, threadId, parentId, pageSize, (page-1)*pageSize)
+	}
+	q = fmt.Sprint(q, " LIMIT ? OFFSET ?")
+	fmt.Println(q)
+	return s.listComments(q, pageSize, (page-1)*pageSize)
 }
 
 func (s *SqliteStore) ListChildComments(threadId, parentId string) ([]*model.CommentOutput, error) {
