@@ -23,8 +23,24 @@ func (u *User) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/", u.Create)
 	r.Get("/{userId}", u.Get)
+	r.Get("/", u.List)
 
 	return r
+}
+
+func (u *User) List(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+	page, _ := web.ReadInt(qs, "page", 0)
+	pageSize, _ := web.ReadInt(qs, "page_size", 0)
+
+	users, err := u.store.ListUsers(page, pageSize)
+	if err != nil {
+		u.logger.Println(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Range", "users 0-10/100")
+	web.Json(w, users)
 }
 
 func (u *User) Get(w http.ResponseWriter, r *http.Request) {
