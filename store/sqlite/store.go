@@ -167,15 +167,6 @@ func (s *SqliteStore) ListComments(threadId string, parentId string, page int, p
 	return s.listComments(q, pageSize, (page-1)*pageSize)
 }
 
-func (s *SqliteStore) ListChildComments(threadId, parentId string) ([]*model.CommentOutput, error) {
-	q := `SELECT c.Id, c.Body, c.CreatedAt, u.Id, u.Name, u.Email
-		FROM comments c
-		INNER JOIN users u ON c.UserId = u.Id
-		WHERE c.ThreadId=? AND c.ParentId=?`
-
-	return s.listComments(q, threadId, parentId)
-}
-
 func (s *SqliteStore) listComments(query string, dest ...interface{}) ([]*model.CommentOutput, error) {
 	rows, err := s.db.Query(query, dest...)
 	if err != nil {
