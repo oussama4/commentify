@@ -10,8 +10,8 @@ type Comment struct {
 }
 
 type CommentOutput struct {
-	Id        string
-	Body      string
-	CreatedAt string
-	Author    User
+	Id        string `json:"id"`
+	Body      string `json:"body"`
+	CreatedAt string `json:"createAt"`
+	Author    User   `json:"user"`
 }
