@@ -9,9 +9,10 @@ type Store interface {
 	CreateComment(body, parentId, userId, threadId string) (string, error)
 	UpdateComment(id string, body string) error
 	DeleteComment(id string) error
-	ListComments(threadId string, parentId string, page int, pageSize int) ([]*model.CommentOutput, error)
+	ListComments(threadId string, parentId string, page int, pageSize int) ([]model.CommentOutput, error)
 	GetThread(id string) (*model.Thread, error)
 	CreateThread(url, domain, title string) (string, error)
 	GetUser(id string) (*model.User, error)
+	ListUsers(page int, pageSize int) ([]model.User, error)
 	CreateUser(name, email string) (string, error)
 }
