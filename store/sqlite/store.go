@@ -7,6 +7,7 @@ import (
 	"github.com/oussama4/commentify/config"
 	"github.com/oussama4/commentify/model"
 	"github.com/oussama4/commentify/store"
+	"github.com/oussama4/stx/crypto"
 	_ "modernc.org/sqlite"
 )
 
@@ -72,7 +73,7 @@ func (s *SqliteStore) GetComment(id string) (*model.Comment, error) {
 
 func (s *SqliteStore) CreateThread(url, domain, title string) (string, error) {
 	q := "INSERT INTO threads(Id, Url, Domain, Title) VALUES(?, ?, ?, ?)"
-	id := store.Uid()
+	id := crypto.Token(21)
 	_, err := s.db.Exec(q, &id, &url, &domain, &title)
 	if err != nil {
 		return "", err
@@ -116,7 +117,7 @@ func (s *SqliteStore) GetUser(id string) (*model.User, error) {
 
 func (s *SqliteStore) CreateUser(name, email string) (string, error) {
 	q := "INSERT INTO users(Id, Name, Email) VALUES(?, ?, ?)"
-	id := store.Uid()
+	id := crypto.Token(21)
 	_, err := s.db.Exec(q, &id, &name, &email)
 	if err != nil {
 		return "", err
@@ -127,7 +128,7 @@ func (s *SqliteStore) CreateUser(name, email string) (string, error) {
 
 func (s *SqliteStore) CreateComment(body, parentId, userId, threadId string) (string, error) {
 	q := "INSERT INTO comments(Id, Body, ParentId, UserId, ThreadId) VALUES(?, ?, ?, ?, ?)"
-	id := store.Uid()
+	id := crypto.Token(21)
 	_, err := s.db.Exec(q, &id, &body, &parentId, &userId, &threadId)
 	if err != nil {
 		return "", err
