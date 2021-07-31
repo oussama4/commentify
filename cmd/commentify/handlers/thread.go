@@ -23,8 +23,24 @@ func (th *Thread) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/", th.Create)
 	r.Get("/{threadId}", th.Get)
+	r.Get("/", th.List)
 
 	return r
+}
+
+func (th *Thread) List(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+	page, _ := web.ReadInt(qs, "page", 0)
+	pageSize, _ := web.ReadInt(qs, "page_size", 0)
+
+	threads, err := th.store.ListThreads(page, pageSize)
+	if err != nil {
+		th.logger.Println(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Range", "threads 0-10/100")
+	web.Json(w, threads)
 }
 
 func (th *Thread) Create(w http.ResponseWriter, r *http.Request) {

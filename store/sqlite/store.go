@@ -7,6 +7,7 @@ import (
 	"github.com/oussama4/commentify/config"
 	"github.com/oussama4/commentify/model"
 	"github.com/oussama4/commentify/store"
+	"github.com/oussama4/stx/crypto"
 	_ "modernc.org/sqlite"
 )
 
@@ -72,7 +73,7 @@ func (s *SqliteStore) GetComment(id string) (*model.Comment, error) {
 
 func (s *SqliteStore) CreateThread(url, domain, title string) (string, error) {
 	q := "INSERT INTO threads(Id, Url, Domain, Title) VALUES(?, ?, ?, ?)"
-	id := store.Uid()
+	id := crypto.Token(21)
 	_, err := s.db.Exec(q, &id, &url, &domain, &title)
 	if err != nil {
 		return "", err
@@ -116,7 +117,7 @@ func (s *SqliteStore) GetUser(id string) (*model.User, error) {
 
 func (s *SqliteStore) CreateUser(name, email string) (string, error) {
 	q := "INSERT INTO users(Id, Name, Email) VALUES(?, ?, ?)"
-	id := store.Uid()
+	id := crypto.Token(21)
 	_, err := s.db.Exec(q, &id, &name, &email)
 	if err != nil {
 		return "", err
@@ -127,7 +128,7 @@ func (s *SqliteStore) CreateUser(name, email string) (string, error) {
 
 func (s *SqliteStore) CreateComment(body, parentId, userId, threadId string) (string, error) {
 	q := "INSERT INTO comments(Id, Body, ParentId, UserId, ThreadId) VALUES(?, ?, ?, ?, ?)"
-	id := store.Uid()
+	id := crypto.Token(21)
 	_, err := s.db.Exec(q, &id, &body, &parentId, &userId, &threadId)
 	if err != nil {
 		return "", err
@@ -166,6 +167,26 @@ func (s *SqliteStore) GetThread(id string) (*model.Thread, error) {
 	}
 
 	return t, nil
+}
+
+func (s *SqliteStore) ListThreads(page int, pageSize int) ([]model.Thread, error) {
+	q := "SELECT Id, Url, Domain, Title FROM threads LIMIT ? OFFSET ?"
+	rows, err := s.db.Query(q, pageSize, (page-1)*pageSize)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]model.Thread, 0)
+	for rows.Next() {
+		t := model.Thread{}
+		if err := rows.Scan(&t.Id, &t.Url, &t.Domain, &t.Title); err != nil {
+			return nil, err
+		}
+		out = append(out, t)
+	}
+
+	return out, nil
 }
 
 func (s *SqliteStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]model.CommentOutput, error) {
