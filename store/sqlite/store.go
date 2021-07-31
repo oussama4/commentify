@@ -168,6 +168,26 @@ func (s *SqliteStore) GetThread(id string) (*model.Thread, error) {
 	return t, nil
 }
 
+func (s *SqliteStore) ListThreads(page int, pageSize int) ([]model.Thread, error) {
+	q := "SELECT Id, Url, Domain, Title FROM threads LIMIT ? OFFSET ?"
+	rows, err := s.db.Query(q, pageSize, (page-1)*pageSize)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]model.Thread, 0)
+	for rows.Next() {
+		t := model.Thread{}
+		if err := rows.Scan(&t.Id, &t.Url, &t.Domain, &t.Title); err != nil {
+			return nil, err
+		}
+		out = append(out, t)
+	}
+
+	return out, nil
+}
+
 func (s *SqliteStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]model.CommentOutput, error) {
 	q := `SELECT c.Id, c.Body, c.CreatedAt, u.Id, u.Name, u.Email
 		FROM comments c
