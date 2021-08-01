@@ -226,3 +226,19 @@ func (s *SqliteStore) listComments(query string, dest ...interface{}) ([]model.C
 
 	return out, nil
 }
+
+func (s *SqliteStore) CountComments(threadId string) (int, error) {
+	q := "SELECT COUNT(*) FROM comments"
+	c := -1
+	if threadId != "" {
+		q = fmt.Sprint(q, " WHERE ThreadId=?")
+		if err := s.db.QueryRow(q, threadId).Scan(&c); err != nil {
+			return c, err
+		}
+		return c, nil
+	}
+	if err := s.db.QueryRow(q).Scan(&c); err != nil {
+		return c, err
+	}
+	return c, nil
+}

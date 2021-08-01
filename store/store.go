@@ -10,6 +10,7 @@ type Store interface {
 	UpdateComment(id string, body string) error
 	DeleteComment(id string) error
 	ListComments(threadId string, parentId string, page int, pageSize int) ([]model.CommentOutput, error)
+	CountComments(threadId string) (int, error)
 	GetThread(id string) (*model.Thread, error)
 	ListThreads(page int, pageSize int) ([]model.Thread, error)
 	CreateThread(url, domain, title string) (string, error)
