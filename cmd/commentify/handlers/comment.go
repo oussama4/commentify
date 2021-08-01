@@ -28,6 +28,7 @@ func (c *Comment) routes() http.Handler {
 	r.Get("/{commentId}", c.Get)
 	r.Get("/", c.List)
 	r.Get("/count", c.Count)
+	r.Delete("/{commentId}", c.Delete)
 
 	return r
 }
@@ -90,4 +91,15 @@ func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 	}
 
 	web.Json(w, map[string]int{"count": count})
+}
+
+func (c *Comment) Delete(w http.ResponseWriter, r *http.Request) {
+	commentId := chi.URLParam(r, "commentId")
+	if err := c.store.DeleteComment(commentId); err != nil {
+		c.logger.Println(err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	web.Json(w, map[string]bool{"deleted": true})
 }
