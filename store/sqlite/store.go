@@ -189,17 +189,16 @@ func (s *SqliteStore) ListThreads(page int, pageSize int) ([]model.Thread, error
 	return out, nil
 }
 
-func (s *SqliteStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]model.CommentOutput, error) {
-	q := `SELECT c.Id, c.Body, c.CreatedAt, u.Id, u.Name, u.Email
-		FROM comments c
-		INNER JOIN users u ON c.UserId = u.Id`
+func (s *SqliteStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]model.Comment, error) {
+	q := `SELECT Id, Body, ParentId, UserId, ThreadId, CreatedAt
+		FROM comments`
 
 	if threadId != "" && parentId == "" {
-		q = fmt.Sprint(q, " WHERE c.ThreadId=? LIMIT ? OFFSET ?")
+		q = fmt.Sprint(q, " WHERE ThreadId=? LIMIT ? OFFSET ?")
 		fmt.Println(q)
 		return s.listComments(q, threadId, pageSize, (page-1)*pageSize)
 	} else if parentId != "" {
-		q = fmt.Sprint(q, " WHERE c.ThreadId=? AND c.ParentId=? LIMIT ? OFFSET ?")
+		q = fmt.Sprint(q, " WHERE ThreadId=? AND ParentId=? LIMIT ? OFFSET ?")
 		fmt.Println(q)
 		return s.listComments(q, threadId, parentId, pageSize, (page-1)*pageSize)
 	}
@@ -208,17 +207,17 @@ func (s *SqliteStore) ListComments(threadId string, parentId string, page int, p
 	return s.listComments(q, pageSize, (page-1)*pageSize)
 }
 
-func (s *SqliteStore) listComments(query string, dest ...interface{}) ([]model.CommentOutput, error) {
+func (s *SqliteStore) listComments(query string, dest ...interface{}) ([]model.Comment, error) {
 	rows, err := s.db.Query(query, dest...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	out := make([]model.CommentOutput, 0)
+	out := make([]model.Comment, 0)
 	for rows.Next() {
-		o := model.CommentOutput{}
-		if err := rows.Scan(&o.Id, &o.Body, &o.CreatedAt, &o.Author.Id, &o.Author.Name, &o.Author.Email); err != nil {
+		o := model.Comment{}
+		if err := rows.Scan(&o.Id, &o.Body, &o.ParentId, &o.UserId, &o.ThreadId, &o.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, o)
