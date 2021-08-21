@@ -26,7 +26,8 @@ var schema string = `
 	CREATE TABLE IF NOT EXISTS users (
 		Id TEXT PRIMARY KEY,
 		Name TEXT NOT NULL,
-		Email TEXT NOT NULL
+		Email TEXT NOT NULL,
+		Admin INTEGER NOT NULL DEFAULT 0
 	);
 
 	CREATE TABLE IF NOT EXISTS threads (
@@ -93,7 +94,7 @@ func (s *SqliteStore) ListUsers(page int, pageSize int) ([]model.User, error) {
 	out := make([]model.User, 0)
 	for rows.Next() {
 		u := model.User{}
-		if err := rows.Scan(&u.Id, &u.Name, &u.Email); err != nil {
+		if err := rows.Scan(&u.Id, &u.Name, &u.Email, &u.Admin); err != nil {
 			return nil, err
 		}
 		out = append(out, u)
@@ -105,7 +106,7 @@ func (s *SqliteStore) ListUsers(page int, pageSize int) ([]model.User, error) {
 func (s *SqliteStore) GetUser(id string) (*model.User, error) {
 	q := "SELECT * FROM users WHERE Id=?"
 	u := &model.User{}
-	err := s.db.QueryRow(q, id).Scan(&u.Id, &u.Name, &u.Email)
+	err := s.db.QueryRow(q, id).Scan(&u.Id, &u.Name, &u.Email, &u.Admin)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.ErrNotFound
@@ -115,10 +116,10 @@ func (s *SqliteStore) GetUser(id string) (*model.User, error) {
 	return u, nil
 }
 
-func (s *SqliteStore) CreateUser(name, email string) (string, error) {
-	q := "INSERT INTO users(Id, Name, Email) VALUES(?, ?, ?)"
+func (s *SqliteStore) CreateUser(name, email string, admin int) (string, error) {
+	q := "INSERT INTO users(Id, Name, Email, Admin) VALUES(?, ?, ?, ?)"
 	id := crypto.Token(21)
-	_, err := s.db.Exec(q, &id, &name, &email)
+	_, err := s.db.Exec(q, &id, &name, &email, &admin)
 	if err != nil {
 		return "", err
 	}

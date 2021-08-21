@@ -16,5 +16,5 @@ type Store interface {
 	CreateThread(url, domain, title string) (string, error)
 	GetUser(id string) (*model.User, error)
 	ListUsers(page int, pageSize int) ([]model.User, error)
-	CreateUser(name, email string) (string, error)
+	CreateUser(name, email string, admin int) (string, error)
 }
