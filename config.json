@@ -1,0 +1,10 @@
+{
+    "environment": "dev",
+    "server": {
+        "port": 8888
+    },
+    "store": {
+        "name": "sqlite",
+        "dsn": "./commentify.db"
+    }
+}

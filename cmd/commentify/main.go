@@ -13,10 +13,13 @@ func main() {
 	l := log.New(os.Stdout, "COMMENTIFY : ", log.LstdFlags|log.Lshortfile)
 
 	// config
-	cfg := config.New()
+	cfg, err := config.LoadConf("./config.json")
+	if err != nil {
+		l.Fatalln(err)
+	}
 
 	// init database
-	store, err := sqlite.Create(cfg.Store)
+	store, err := sqlite.Create(cfg.Store.Dsn)
 	if err != nil {
 		l.Fatalln(err)
 	}
