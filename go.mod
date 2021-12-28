@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.0
-	github.com/oussama4/command v0.2.0
+	github.com/oussama4/command v0.2.1
 	github.com/oussama4/stx v0.0.0-20210731171310-b75579016d8b
 	modernc.org/sqlite v1.14.3
 )

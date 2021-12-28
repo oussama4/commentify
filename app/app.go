@@ -36,9 +36,9 @@ func (app *Application) Start() {
 
 	// register commands
 	createAdminCmd := newAdminCmd(app.store)
-	serverCmd := NewServerCmd("server", app.logger, routes)
-	app.commander.Register(createAdminCmd)
-	app.commander.Register(serverCmd)
+	serverCmd := NewServerCmd(app.logger, routes)
+	app.commander.Register("admin", createAdminCmd)
+	app.commander.Register("start", serverCmd)
 
 	app.logger.Fatalln(app.commander.Run())
 }

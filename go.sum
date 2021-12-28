@@ -16,6 +16,8 @@ github.com/mattn/go-sqlite3 v1.14.9 h1:10HX2Td0ocZpYEjhilsuo6WWtUqttj2Kb0KtD86/K
 github.com/mattn/go-sqlite3 v1.14.9/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
 github.com/oussama4/command v0.2.0 h1:MdqryKbOLoVGXNpW5mvz5bd4C28RWqfw6m040fGDtWA=
 github.com/oussama4/command v0.2.0/go.mod h1:0ocbRchhkPnUbkVQghE74MhzOmZu8WjnqR1E6gPXMzE=
+github.com/oussama4/command v0.2.1 h1:JNy29IZoUe+2ZdikC/kMyMeURUYHyuSAgiz1KD2T9Cg=
+github.com/oussama4/command v0.2.1/go.mod h1:0ocbRchhkPnUbkVQghE74MhzOmZu8WjnqR1E6gPXMzE=
 github.com/oussama4/stx v0.0.0-20210731171310-b75579016d8b h1:I5mX3656XepuVkrkiDPKuU39TJiDaGcNQMPonKErBkg=
 github.com/oussama4/stx v0.0.0-20210731171310-b75579016d8b/go.mod h1:jtNtGjS821qpWEfSO+FCYnL6W+tIJFHCSsIZu8uXfkY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

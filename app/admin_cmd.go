@@ -9,24 +9,24 @@ import (
 )
 
 type adminCmd struct {
-	name  string
-	fs    *flag.FlagSet
-	store store.Store
+	synopsis string
+	fs       *flag.FlagSet
+	store    store.Store
 }
 
 func newAdminCmd(store store.Store) *adminCmd {
 	return &adminCmd{
-		name:  "admin",
-		fs:    flag.NewFlagSet("admin", flag.PanicOnError),
-		store: store,
+		synopsis: "create an admin user",
+		fs:       flag.NewFlagSet("admin", flag.PanicOnError),
+		store:    store,
 	}
 }
 
-func (ac *adminCmd) Name() string {
-	return ac.name
+func (ac *adminCmd) Synopsis() string {
+	return ac.synopsis
 }
 
-func (ac *adminCmd) Usage() string {
+func (ac *adminCmd) Help() string {
 	u := `usage: commentify admin
 		create an admin user
 		`
