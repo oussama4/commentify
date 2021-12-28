@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/oussama4/commentify/config"
 	"github.com/oussama4/commentify/model"
 	"github.com/oussama4/commentify/store"
 	"github.com/oussama4/stx/crypto"
@@ -42,8 +41,8 @@ type SqliteStore struct {
 	db *sql.DB
 }
 
-func Create(dbConfig config.Store) (store.Store, error) {
-	db, err := sql.Open("sqlite", dbConfig.Dsn)
+func Create(dbConfig string) (store.Store, error) {
+	db, err := sql.Open("sqlite", dbConfig)
 	if err != nil {
 		return nil, err
 	}

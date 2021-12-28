@@ -1,31 +1,31 @@
 package config
 
-type Server struct {
-	Address string
-}
+import (
+	"encoding/json"
+	"os"
+)
 
-type Store struct {
-	Name string
-	Dsn  string // data source name
-}
-
-type Conf struct {
-	Environment string
-	Server      Server
-	Store       Store
-}
-
-func New() Conf {
-	c := Conf{
-		Environment: "prod",
-		Server: Server{
-			Address: ":8888",
-		},
-		Store: Store{
-			Name: "sqlite",
-			Dsn:  "./commentify.db",
-		},
+type Config struct {
+	Environment string `json:"environment"`
+	Server      struct {
+		Port int `json:"port"`
 	}
+	Store struct {
+		Name string `json:"name"`
+		Dsn  string `json:"dsn"`
+	}
+}
 
-	return c
+// load config from a json file
+func LoadConf(path string) (*Config, error) {
+	configFile, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(configFile)
+	config := &Config{}
+	if err := decoder.Decode(config); err != nil {
+		return nil, err
+	}
+	return config, nil
 }

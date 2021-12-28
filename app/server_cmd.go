@@ -9,18 +9,18 @@ import (
 )
 
 type serverCmd struct {
-	name    string
-	port    int
-	handler http.Handler
-	logger  *log.Logger
-	fs      *flag.FlagSet
+	synopsis string
+	port     int
+	handler  http.Handler
+	logger   *log.Logger
+	fs       *flag.FlagSet
 }
 
-func (sc *serverCmd) Name() string {
-	return sc.name
+func (sc *serverCmd) Synopsis() string {
+	return sc.synopsis
 }
 
-func NewServerCmd(name string, logger *log.Logger, handler http.Handler) *serverCmd {
+func NewServerCmd(logger *log.Logger, handler http.Handler) *serverCmd {
 	fs := flag.NewFlagSet("server", flag.PanicOnError)
 	p := fs.Int("p", 8888, "TCP port for the server to listen on.")
 
@@ -29,16 +29,16 @@ func NewServerCmd(name string, logger *log.Logger, handler http.Handler) *server
 	}
 
 	serverCmd := &serverCmd{
-		name:    "server",
-		port:    *p,
-		handler: handler,
-		logger:  logger,
-		fs:      flag.NewFlagSet("server", flag.PanicOnError),
+		synopsis: "start commentify server",
+		port:     *p,
+		handler:  handler,
+		logger:   logger,
+		fs:       flag.NewFlagSet("server", flag.PanicOnError),
 	}
 	return serverCmd
 }
 
-func (sc *serverCmd) Usage() string {
+func (sc *serverCmd) Help() string {
 	u := `usage: commentify server -p <PORT>
 		start the API server`
 	return u

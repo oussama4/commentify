@@ -11,13 +11,13 @@ import (
 )
 
 type Application struct {
-	config    config.Conf
+	config    *config.Config
 	logger    *log.Logger
 	store     store.Store
 	commander *command.Commander
 }
 
-func New(config config.Conf, store store.Store) *Application {
+func New(config *config.Config, store store.Store) *Application {
 	l := log.New(os.Stdout, "COMMENTIFY : ", log.LstdFlags|log.Lshortfile)
 	cmder := command.New("commentify")
 
@@ -36,9 +36,9 @@ func (app *Application) Start() {
 
 	// register commands
 	createAdminCmd := newAdminCmd(app.store)
-	serverCmd := NewServerCmd("server", app.logger, routes)
-	app.commander.Register(createAdminCmd)
-	app.commander.Register(serverCmd)
+	serverCmd := NewServerCmd(app.logger, routes)
+	app.commander.Register("admin", createAdminCmd)
+	app.commander.Register("start", serverCmd)
 
 	app.logger.Fatalln(app.commander.Run())
 }
