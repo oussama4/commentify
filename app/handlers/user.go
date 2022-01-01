@@ -64,7 +64,7 @@ func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	userId, err := u.store.CreateUser(user.Name, user.Email, 0)
+	userId, err := u.store.CreateUser(user.Name, user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

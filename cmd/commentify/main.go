@@ -6,7 +6,7 @@ import (
 
 	"github.com/oussama4/commentify/app"
 	"github.com/oussama4/commentify/config"
-	"github.com/oussama4/commentify/store/sqlite"
+	"github.com/oussama4/commentify/store/postgres"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// init database
-	store, err := sqlite.Create(cfg.Store.Dsn)
+	store, err := postgres.Create(cfg.Store.Dsn)
 	if err != nil {
 		l.Fatalln(err)
 	}

@@ -45,7 +45,7 @@ func (ac *adminCmd) Run() error {
 	fmt.Print("email: ")
 	fmt.Fscan(os.Stdin, &email)
 
-	userId, err := ac.store.CreateUser(name, email, 1)
+	userId, err := ac.store.CreateUser(name, email)
 	if err != nil {
 		return err
 	}
