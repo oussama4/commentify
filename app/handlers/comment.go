@@ -16,10 +16,10 @@ type Comment struct {
 }
 
 type CommentInput struct {
-	Body     string
 	ParentId string
 	UserId   string
 	ThreadId string
+	Body     string
 }
 
 func (c *Comment) routes() http.Handler {

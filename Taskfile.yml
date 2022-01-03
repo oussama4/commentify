@@ -1,0 +1,13 @@
+# https://taskfile.dev
+
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  start:
+    cmds:
+      - go run cmd/commentify/main.go server
+  goose:
+    cmds:
+      - goose -dir ./store/postgres/migrations postgres $DATABASE_URL {{.CLI_ARGS}}

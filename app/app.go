@@ -38,7 +38,7 @@ func (app *Application) Start() {
 	createAdminCmd := newAdminCmd(app.store)
 	serverCmd := NewServerCmd(app.logger, routes)
 	app.commander.Register("admin", createAdminCmd)
-	app.commander.Register("start", serverCmd)
+	app.commander.Register("server", serverCmd)
 
 	app.logger.Fatalln(app.commander.Run())
 }
