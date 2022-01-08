@@ -1,4 +1,5 @@
 *.db
 tmp/
-config.json
 .env
+.config.json
+vendor/
