@@ -13,7 +13,7 @@ func main() {
 	l := log.New(os.Stdout, "COMMENTIFY : ", log.LstdFlags|log.Lshortfile)
 
 	// config
-	cfg, err := config.LoadConf("./config.json")
+	cfg, err := config.LoadConf("./.config.json")
 	if err != nil {
 		l.Fatalln(err)
 	}
