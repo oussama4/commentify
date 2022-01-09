@@ -3,7 +3,7 @@ package postgres
 import (
 	"database/sql"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
+	_ "github.com/lib/pq"
 	"github.com/oussama4/commentify/model"
 	"github.com/oussama4/commentify/store"
 	sb "github.com/oussama4/sqlbuilder"
@@ -15,7 +15,7 @@ type PostgresStore struct {
 }
 
 func Create(dsn string) (store.Store, error) {
-	db, err := sql.Open("pgx", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
