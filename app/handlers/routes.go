@@ -27,7 +27,7 @@ func Routes(store store.Store, logger *log.Logger) http.Handler {
 		store:  store,
 		logger: logger,
 	}
-	th := &Thread{
+	th := &Page{
 		store:  store,
 		logger: logger,
 	}
@@ -36,7 +36,7 @@ func Routes(store store.Store, logger *log.Logger) http.Handler {
 		logger: logger,
 	}
 	r.Mount("/users", u.routes())
-	r.Mount("/threads", th.routes())
+	r.Mount("/pages", th.routes())
 	r.Mount("/comments", c.routes())
 
 	return r
