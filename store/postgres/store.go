@@ -26,7 +26,7 @@ func Create(dsn string) (store.Store, error) {
 func (s *PostgresStore) GetComment(id string) (*model.Comment, error) {
 	q, args := sb.Select().From("comments").Where(sb.Eq("id", id)).Query()
 	c := &model.Comment{}
-	err := s.db.QueryRow(q, args...).Scan(&c.Id, &c.Body, &c.ParentId, &c.UserId, &c.ThreadId, &c.CreatedAt)
+	err := s.db.QueryRow(q, args...).Scan(&c.Id, &c.Body, &c.ParentId, &c.UserId, &c.PageId, &c.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.ErrNotFound
@@ -36,11 +36,11 @@ func (s *PostgresStore) GetComment(id string) (*model.Comment, error) {
 	return c, nil
 }
 
-func (s *PostgresStore) CreateThread(url, domain, title string) (string, error) {
+func (s *PostgresStore) CreatePage(url, title string) (string, error) {
 	id := crypto.Token(21)
-	q, args := sb.Insert("threads").
-		Columns("id", "url", "domain", "title").
-		Values(&id, &url, &domain, &title).
+	q, args := sb.Insert("pages").
+		Columns("id", "url", "title").
+		Values(&id, &url, &title).
 		Query()
 	_, err := s.db.Exec(q, args...)
 	if err != nil {
@@ -61,7 +61,7 @@ func (s *PostgresStore) ListUsers(page int, pageSize int) ([]model.User, error) 
 	out := make([]model.User, 0)
 	for rows.Next() {
 		u := model.User{}
-		if err := rows.Scan(&u.Id, &u.Name, &u.Email, &u.Admin); err != nil {
+		if err := rows.Scan(&u.Id, &u.Name, &u.Email); err != nil {
 			return nil, err
 		}
 		out = append(out, u)
@@ -73,7 +73,7 @@ func (s *PostgresStore) ListUsers(page int, pageSize int) ([]model.User, error) 
 func (s *PostgresStore) GetUser(id string) (*model.User, error) {
 	q, args := sb.Select().From("users").Where(sb.Eq("id", id)).Query()
 	u := &model.User{}
-	err := s.db.QueryRow(q, args...).Scan(&u.Id, &u.Name, &u.Email, &u.Admin)
+	err := s.db.QueryRow(q, args...).Scan(&u.Id, &u.Name, &u.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.ErrNotFound
@@ -94,11 +94,11 @@ func (s *PostgresStore) CreateUser(name, email string) (string, error) {
 	return id, nil
 }
 
-func (s *PostgresStore) CreateComment(body, parentId, userId, threadId string) (string, error) {
+func (s *PostgresStore) CreateComment(body, parentId, userId, pageId string) (string, error) {
 	id := crypto.Token(21)
 	q, args := sb.Insert("comments").
-		Columns("id", "body", "parent_id", "user_id", "thread_id").
-		Values(&id, &body, &parentId, &userId, &threadId).
+		Columns("id", "body", "parent_id", "user_id", "page_id").
+		Values(&id, &body, &parentId, &userId, &pageId).
 		Query()
 	_, err := s.db.Exec(q, args...)
 	if err != nil {
@@ -126,10 +126,10 @@ func (s *PostgresStore) DeleteComment(id string) error {
 	return nil
 }
 
-func (s *PostgresStore) GetThread(id string) (*model.Thread, error) {
-	q, args := sb.Select().From("threads").Where(sb.Eq("id", id)).Query()
-	t := &model.Thread{}
-	err := s.db.QueryRow(q, args...).Scan(&t.Id, &t.Url, &t.Domain, &t.Title)
+func (s *PostgresStore) GetPage(id string) (*model.Page, error) {
+	q, args := sb.Select().From("pages").Where(sb.Eq("id", id)).Query()
+	p := &model.Page{}
+	err := s.db.QueryRow(q, args...).Scan(&p.Id, &p.Url, &p.Title)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.ErrNotFound
@@ -137,12 +137,12 @@ func (s *PostgresStore) GetThread(id string) (*model.Thread, error) {
 		return nil, err
 	}
 
-	return t, nil
+	return p, nil
 }
 
-func (s *PostgresStore) ListThreads(page int, pageSize int) ([]model.Thread, error) {
-	q, args := sb.Select("id", "url", "domain", "title").
-		From("threads").
+func (s *PostgresStore) ListPages(page int, pageSize int) ([]model.Page, error) {
+	q, args := sb.Select("id", "url", "title").
+		From("pages").
 		Limit(pageSize).
 		Offset((page - 1) * pageSize).
 		Query()
@@ -152,10 +152,10 @@ func (s *PostgresStore) ListThreads(page int, pageSize int) ([]model.Thread, err
 	}
 	defer rows.Close()
 
-	out := make([]model.Thread, 0)
+	out := make([]model.Page, 0)
 	for rows.Next() {
-		t := model.Thread{}
-		if err := rows.Scan(&t.Id, &t.Url, &t.Domain, &t.Title); err != nil {
+		t := model.Page{}
+		if err := rows.Scan(&t.Id, &t.Url, &t.Title); err != nil {
 			return nil, err
 		}
 		out = append(out, t)
@@ -164,15 +164,15 @@ func (s *PostgresStore) ListThreads(page int, pageSize int) ([]model.Thread, err
 	return out, nil
 }
 
-func (s *PostgresStore) ListComments(threadId string, parentId string, page int, pageSize int) ([]model.Comment, error) {
+func (s *PostgresStore) ListComments(pageId string, parentId string, page int, pageSize int) ([]model.Comment, error) {
 	qb := sb.Select().From("comments")
 
-	if threadId != "" && parentId == "" {
-		q, args := qb.Where(sb.Eq("thread_id", threadId)).Limit(pageSize).Offset((page - 1) * pageSize).Query()
+	if pageId != "" && parentId == "" {
+		q, args := qb.Where(sb.Eq("page_id", pageId)).Limit(pageSize).Offset((page - 1) * pageSize).Query()
 		return s.listComments(q, args...)
 	} else if parentId != "" {
 		q, args := qb.Where(sb.And(
-			sb.Eq("thread_id", threadId),
+			sb.Eq("page_id", pageId),
 			sb.Eq("parent_id", parentId),
 		)).Limit(pageSize).Offset((page - 1) * pageSize).Query()
 		return s.listComments(q, args...)
@@ -191,7 +191,7 @@ func (s *PostgresStore) listComments(query string, dest ...interface{}) ([]model
 	out := make([]model.Comment, 0)
 	for rows.Next() {
 		o := model.Comment{}
-		if err := rows.Scan(&o.Id, &o.Body, &o.ParentId, &o.UserId, &o.ThreadId, &o.CreatedAt); err != nil {
+		if err := rows.Scan(&o.Id, &o.Body, &o.ParentId, &o.UserId, &o.PageId, &o.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, o)
@@ -200,11 +200,11 @@ func (s *PostgresStore) listComments(query string, dest ...interface{}) ([]model
 	return out, nil
 }
 
-func (s *PostgresStore) CountComments(threadId string) (int, error) {
+func (s *PostgresStore) CountComments(pageId string) (int, error) {
 	qb := sb.Select("COUNT(*)").From("comments")
 	c := -1
-	if threadId != "" {
-		q, args := qb.Where(sb.Eq("thread_id", threadId)).Query()
+	if pageId != "" {
+		q, args := qb.Where(sb.Eq("page_id", pageId)).Query()
 		if err := s.db.QueryRow(q, args...).Scan(&c); err != nil {
 			return c, err
 		}

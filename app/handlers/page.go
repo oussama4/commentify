@@ -10,58 +10,57 @@ import (
 	"github.com/oussama4/commentify/web"
 )
 
-type Thread struct {
+type Page struct {
 	store  store.Store
 	logger *log.Logger
 }
 
-type ThreadInput struct {
-	Url, Domain, Title string
+type PageInput struct {
+	Url, Title string
 }
 
-func (th *Thread) routes() http.Handler {
+func (th *Page) routes() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/", th.Create)
-	r.Get("/{threadId}", th.Get)
+	r.Get("/{pageId}", th.Get)
 	r.Get("/", th.List)
 
 	return r
 }
 
-func (th *Thread) List(w http.ResponseWriter, r *http.Request) {
+func (p *Page) List(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
 	page, _ := web.ReadInt(qs, "page", 0)
-	pageSize, _ := web.ReadInt(qs, "page_size", 0)
+	pageSize, _ := web.ReadInt(qs, "page_size", 10)
 
-	threads, err := th.store.ListThreads(page, pageSize)
+	pages, err := p.store.ListPages(page, pageSize)
 	if err != nil {
-		th.logger.Println(err)
+		p.logger.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Range", "threads 0-10/100")
-	web.Json(w, threads)
+	web.Json(w, pages)
 }
 
-func (th *Thread) Create(w http.ResponseWriter, r *http.Request) {
-	thread := ThreadInput{}
-	if err := json.NewDecoder(r.Body).Decode(&thread); err != nil {
+func (p *Page) Create(w http.ResponseWriter, r *http.Request) {
+	page := PageInput{}
+	if err := json.NewDecoder(r.Body).Decode(&page); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	threadId, err := th.store.CreateThread(thread.Url, thread.Domain, thread.Title)
+	pageId, err := p.store.CreatePage(page.Url, page.Title)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	web.Json(w, threadId)
+	web.Json(w, pageId)
 }
 
-func (th *Thread) Get(w http.ResponseWriter, r *http.Request) {
-	threadId := chi.URLParam(r, "threadId")
-	thread, err := th.store.GetThread(threadId)
+func (p *Page) Get(w http.ResponseWriter, r *http.Request) {
+	pageId := chi.URLParam(r, "pageId")
+	page, err := p.store.GetPage(pageId)
 	if err != nil {
 		if err == store.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -71,5 +70,5 @@ func (th *Thread) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, thread)
+	web.Json(w, page)
 }

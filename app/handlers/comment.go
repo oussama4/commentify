@@ -18,7 +18,7 @@ type Comment struct {
 type CommentInput struct {
 	ParentId string
 	UserId   string
-	ThreadId string
+	PageId   string
 	Body     string
 }
 
@@ -39,7 +39,7 @@ func (c *Comment) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 
-	commentId, err := c.store.CreateComment(comment.Body, comment.ParentId, comment.UserId, comment.ThreadId)
+	commentId, err := c.store.CreateComment(comment.Body, comment.ParentId, comment.UserId, comment.PageId)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -65,27 +65,24 @@ func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
 
 func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
-	threadId := web.ReadString(qs, "thread", "")
+	pageId := web.ReadString(qs, "page_id", "")
 	parentId := web.ReadString(qs, "parent", "")
 	page, _ := web.ReadInt(qs, "page", 0)
 	pageSize, _ := web.ReadInt(qs, "page_size", 0)
 
-	comments, err := c.store.ListComments(threadId, parentId, page, pageSize)
+	comments, err := c.store.ListComments(pageId, parentId, page, pageSize)
 	if err != nil {
-		c.logger.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Range", "comments 0-10/100")
 	web.Json(w, comments)
 }
 
 func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
-	threadId := web.ReadString(qs, "thread", "")
-	count, err := c.store.CountComments(threadId)
+	pageId := web.ReadString(qs, "page_id", "")
+	count, err := c.store.CountComments(pageId)
 	if err != nil {
-		c.logger.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -96,7 +93,6 @@ func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 func (c *Comment) Delete(w http.ResponseWriter, r *http.Request) {
 	commentId := chi.URLParam(r, "commentId")
 	if err := c.store.DeleteComment(commentId); err != nil {
-		c.logger.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

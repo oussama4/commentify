@@ -5,7 +5,7 @@ type Comment struct {
 	Body      string `json:"body"`
 	ParentId  string `json:"parentId"`
 	UserId    string `json:"userId"`
-	ThreadId  string `json:"threadId"`
+	PageId    string `json:"pageId"`
 	CreatedAt string `json:"createdAt"`
 }
 
