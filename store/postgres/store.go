@@ -51,7 +51,8 @@ func (s *PostgresStore) CreatePage(url, title string) (string, error) {
 }
 
 func (s *PostgresStore) ListUsers(page int, pageSize int) ([]model.User, error) {
-	q, args := sb.Select().From("users").Limit(pageSize).Offset((page - 1) * pageSize).Query()
+	q, args := sb.Select("id", "name", "email").From("users").
+		Limit(pageSize).Offset((page - 1) * pageSize).Query()
 	rows, err := s.db.Query(q, args...)
 	if err != nil {
 		return nil, err
@@ -164,18 +165,16 @@ func (s *PostgresStore) ListPages(page int, pageSize int) ([]model.Page, error) 
 	return out, nil
 }
 
-func (s *PostgresStore) ListComments(pageId string, parentId string, page int, pageSize int) ([]model.Comment, error) {
+func (s *PostgresStore) ListComments(pageId string, pageUrl string, parentId string, page int, pageSize int) ([]model.Comment, error) {
 	qb := sb.Select().From("comments")
 
-	if pageId != "" && parentId == "" {
-		q, args := qb.Where(sb.Eq("page_id", pageId)).Limit(pageSize).Offset((page - 1) * pageSize).Query()
-		return s.listComments(q, args...)
-	} else if parentId != "" {
-		q, args := qb.Where(sb.And(
-			sb.Eq("page_id", pageId),
-			sb.Eq("parent_id", parentId),
-		)).Limit(pageSize).Offset((page - 1) * pageSize).Query()
-		return s.listComments(q, args...)
+	if pageId != "" {
+		qb = qb.Where(sb.Eq("page_id", pageId))
+	} else if pageId == "" && pageUrl != "" {
+		qb = qb.Where(sb.Eq("url", pageUrl))
+	}
+	if parentId != "" && (pageId != "" || pageUrl != "") {
+		qb = qb.Where(sb.Eq("parent_id", parentId))
 	}
 	q, args := qb.Limit(pageSize).Offset((page - 1) * pageSize).Query()
 	return s.listComments(q, args...)

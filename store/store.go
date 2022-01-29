@@ -9,7 +9,7 @@ type Store interface {
 	CreateComment(body, parentId, userId, pageId string) (string, error)
 	UpdateComment(id string, body string) error
 	DeleteComment(id string) error
-	ListComments(pageId string, parentId string, page int, pageSize int) ([]model.Comment, error)
+	ListComments(pageId string, pageUrl string, parentId string, page int, pageSize int) ([]model.Comment, error)
 	CountComments(pageId string) (int, error)
 	GetPage(id string) (*model.Page, error)
 	ListPages(page int, pageSize int) ([]model.Page, error)

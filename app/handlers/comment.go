@@ -16,10 +16,10 @@ type Comment struct {
 }
 
 type CommentInput struct {
-	ParentId string
-	UserId   string
-	PageId   string
-	Body     string
+	ParentId string `json:"parent_id"`
+	UserId   string `json:"user_id"`
+	PageId   string `json:"page_id"`
+	Body     string `json:"body"`
 }
 
 func (c *Comment) routes() http.Handler {
@@ -41,7 +41,7 @@ func (c *Comment) Create(w http.ResponseWriter, r *http.Request) {
 
 	commentId, err := c.store.CreateComment(comment.Body, comment.ParentId, comment.UserId, comment.PageId)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -66,11 +66,12 @@ func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
 func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
 	pageId := web.ReadString(qs, "page_id", "")
+	pageUrl := web.ReadString(qs, "page_url", "")
 	parentId := web.ReadString(qs, "parent", "")
 	page, _ := web.ReadInt(qs, "page", 0)
 	pageSize, _ := web.ReadInt(qs, "page_size", 0)
 
-	comments, err := c.store.ListComments(pageId, parentId, page, pageSize)
+	comments, err := c.store.ListComments(pageId, pageUrl, parentId, page, pageSize)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
