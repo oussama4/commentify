@@ -31,12 +31,12 @@ func (u *User) routes() http.Handler {
 func (u *User) List(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
 	page, _ := web.ReadInt(qs, "page", 0)
-	pageSize, _ := web.ReadInt(qs, "page_size", 0)
+	pageSize, _ := web.ReadInt(qs, "page_size", 10)
 
 	users, err := u.store.ListUsers(page, pageSize)
 	if err != nil {
 		u.logger.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Range", "users 0-10/100")
