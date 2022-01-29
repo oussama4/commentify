@@ -7,7 +7,11 @@ dotenv: ['.env']
 tasks:
   start:
     cmds:
-      - go run app/*.go server
+      - go run app/*.go {{.CLI_ARGS}}
   goose:
     cmds:
       - goose -dir ./store/postgres/migrations postgres $DATABASE_URL {{.CLI_ARGS}}
+  tidy:
+    cmds:
+      - go mod tidy
+      - go mod vendor
