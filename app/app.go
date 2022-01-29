@@ -1,8 +1,7 @@
-package app
+package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/oussama4/command"
 	"github.com/oussama4/commentify/app/handlers"
@@ -17,13 +16,12 @@ type Application struct {
 	commander *command.Commander
 }
 
-func New(config *config.Config, store store.Store) *Application {
-	l := log.New(os.Stdout, "COMMENTIFY : ", log.LstdFlags|log.Lshortfile)
+func NewApp(logger *log.Logger, config *config.Config, store store.Store) *Application {
 	cmder := command.New("commentify")
 
 	app := &Application{
 		config:    config,
-		logger:    l,
+		logger:    logger,
 		store:     store,
 		commander: cmder,
 	}
@@ -31,7 +29,7 @@ func New(config *config.Config, store store.Store) *Application {
 	return app
 }
 
-func (app *Application) Start() {
+func (app *Application) start() error {
 	routes := handlers.Routes(app.store, app.logger)
 
 	// register commands
@@ -40,5 +38,5 @@ func (app *Application) Start() {
 	app.commander.Register("admin", createAdminCmd)
 	app.commander.Register("server", serverCmd)
 
-	app.logger.Fatalln(app.commander.Run())
+	return app.commander.Run()
 }
