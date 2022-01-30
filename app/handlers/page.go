@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oussama4/commentify/base/web"
 	"github.com/oussama4/commentify/store"
-	"github.com/oussama4/commentify/web"
 )
 
 type Page struct {
@@ -39,7 +39,7 @@ func (p *Page) List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	web.Json(w, pages)
+	web.Json(w, http.StatusOK, map[string]interface{}{"pages": pages})
 }
 
 func (p *Page) Create(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +55,7 @@ func (p *Page) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, pageId)
+	web.Json(w, http.StatusOK, map[string]interface{}{"page_id": pageId})
 }
 
 func (p *Page) Get(w http.ResponseWriter, r *http.Request) {
@@ -70,5 +70,5 @@ func (p *Page) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, page)
+	web.Json(w, http.StatusOK, map[string]interface{}{"page": page})
 }

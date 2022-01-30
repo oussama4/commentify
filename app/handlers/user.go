@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oussama4/commentify/base/web"
 	"github.com/oussama4/commentify/store"
-	"github.com/oussama4/commentify/web"
 )
 
 type User struct {
@@ -39,8 +39,7 @@ func (u *User) List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Range", "users 0-10/100")
-	web.Json(w, users)
+	web.Json(w, http.StatusOK, map[string]interface{}{"users": users})
 }
 
 func (u *User) Get(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +54,7 @@ func (u *User) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, user)
+	web.Json(w, http.StatusOK, map[string]interface{}{"user": user})
 }
 
 func (u *User) Create(w http.ResponseWriter, r *http.Request) {
@@ -69,5 +68,5 @@ func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	web.Json(w, userId)
+	web.Json(w, http.StatusOK, map[string]interface{}{"user_id": userId})
 }

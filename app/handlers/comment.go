@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oussama4/commentify/base/web"
 	"github.com/oussama4/commentify/store"
-	"github.com/oussama4/commentify/web"
 )
 
 type Comment struct {
@@ -45,7 +45,7 @@ func (c *Comment) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, commentId)
+	web.Json(w, http.StatusOK, map[string]interface{}{"comment_id": commentId})
 }
 
 func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +60,7 @@ func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, comment)
+	web.Json(w, http.StatusOK, map[string]interface{}{"comment": comment})
 }
 
 func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +76,7 @@ func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	web.Json(w, comments)
+	web.Json(w, http.StatusOK, map[string]interface{}{"comments": comments})
 }
 
 func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +88,7 @@ func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, map[string]int{"count": count})
+	web.Json(w, http.StatusOK, map[string]interface{}{"count": count})
 }
 
 func (c *Comment) Delete(w http.ResponseWriter, r *http.Request) {
@@ -98,5 +98,5 @@ func (c *Comment) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	web.Json(w, map[string]bool{"deleted": true})
+	web.Json(w, http.StatusOK, map[string]interface{}{"deleted": true})
 }
