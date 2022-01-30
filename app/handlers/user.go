@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -35,9 +36,7 @@ func (u *User) List(w http.ResponseWriter, r *http.Request) {
 
 	users, err := u.store.ListUsers(page, pageSize)
 	if err != nil {
-		u.logger.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
 	web.Json(w, http.StatusOK, map[string]interface{}{"users": users})
 }
@@ -46,12 +45,10 @@ func (u *User) Get(w http.ResponseWriter, r *http.Request) {
 	userId := chi.URLParam(r, "userId")
 	user, err := u.store.GetUser(userId)
 	if err != nil {
-		if err == store.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
+		if errors.Is(err, store.ErrNotFound) {
+			respondError(u.logger, w, http.StatusNotFound, err.Error())
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"user": user})
@@ -60,12 +57,12 @@ func (u *User) Get(w http.ResponseWriter, r *http.Request) {
 func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 	user := UserInput{}
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	userId, err := u.store.CreateUser(user.Name, user.Email)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"user_id": userId})

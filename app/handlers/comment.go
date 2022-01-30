@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -36,13 +37,12 @@ func (c *Comment) routes() http.Handler {
 func (c *Comment) Create(w http.ResponseWriter, r *http.Request) {
 	comment := CommentInput{}
 	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	commentId, err := c.store.CreateComment(comment.Body, comment.ParentId, comment.UserId, comment.PageId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"comment_id": commentId})
@@ -52,12 +52,10 @@ func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
 	commentId := chi.URLParam(r, "commentId")
 	comment, err := c.store.GetComment(commentId)
 	if err != nil {
-		if err == store.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
+		if errors.Is(err, store.ErrNotFound) {
+			respondError(c.logger, w, http.StatusNotFound, err.Error())
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"comment": comment})
@@ -73,8 +71,7 @@ func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
 
 	comments, err := c.store.ListComments(pageId, pageUrl, parentId, page, pageSize)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
 	}
 	web.Json(w, http.StatusOK, map[string]interface{}{"comments": comments})
 }
@@ -84,8 +81,7 @@ func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 	pageId := web.ReadString(qs, "page_id", "")
 	count, err := c.store.CountComments(pageId)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"count": count})
@@ -94,8 +90,7 @@ func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 func (c *Comment) Delete(w http.ResponseWriter, r *http.Request) {
 	commentId := chi.URLParam(r, "commentId")
 	if err := c.store.DeleteComment(commentId); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"deleted": true})
