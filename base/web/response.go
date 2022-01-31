@@ -7,13 +7,17 @@ import (
 )
 
 // Json encodes v to JSON and writes it to the client
-func Json(w http.ResponseWriter, v interface{}) {
+func Json(w http.ResponseWriter, statusCode int, v map[string]interface{}) error {
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
 	if err := enc.Encode(v); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
+
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Write(buf.Bytes())
+	w.WriteHeader(statusCode)
+	if _, err := w.Write(buf.Bytes()); err != nil {
+		return err
+	}
+	return nil
 }

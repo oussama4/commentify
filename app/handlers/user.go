@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oussama4/commentify/base/web"
 	"github.com/oussama4/commentify/store"
-	"github.com/oussama4/commentify/web"
 )
 
 type User struct {
@@ -35,39 +36,34 @@ func (u *User) List(w http.ResponseWriter, r *http.Request) {
 
 	users, err := u.store.ListUsers(page, pageSize)
 	if err != nil {
-		u.logger.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
-	w.Header().Set("Content-Range", "users 0-10/100")
-	web.Json(w, users)
+	web.Json(w, http.StatusOK, map[string]interface{}{"users": users})
 }
 
 func (u *User) Get(w http.ResponseWriter, r *http.Request) {
 	userId := chi.URLParam(r, "userId")
 	user, err := u.store.GetUser(userId)
 	if err != nil {
-		if err == store.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
+		if errors.Is(err, store.ErrNotFound) {
+			respondError(u.logger, w, http.StatusNotFound, err.Error())
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
-	web.Json(w, user)
+	web.Json(w, http.StatusOK, map[string]interface{}{"user": user})
 }
 
 func (u *User) Create(w http.ResponseWriter, r *http.Request) {
 	user := UserInput{}
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	userId, err := u.store.CreateUser(user.Name, user.Email)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondError(u.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
-	web.Json(w, userId)
+	web.Json(w, http.StatusOK, map[string]interface{}{"user_id": userId})
 }

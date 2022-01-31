@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oussama4/commentify/base/web"
 	"github.com/oussama4/commentify/store"
-	"github.com/oussama4/commentify/web"
 )
 
 type Page struct {
@@ -35,40 +36,34 @@ func (p *Page) List(w http.ResponseWriter, r *http.Request) {
 
 	pages, err := p.store.ListPages(page, pageSize)
 	if err != nil {
-		p.logger.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		respondError(p.logger, w, http.StatusInternalServerError, err.Error())
 	}
-	web.Json(w, pages)
+	web.Json(w, http.StatusOK, map[string]interface{}{"pages": pages})
 }
 
 func (p *Page) Create(w http.ResponseWriter, r *http.Request) {
 	page := PageInput{}
 	if err := json.NewDecoder(r.Body).Decode(&page); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		respondError(p.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
 	pageId, err := p.store.CreatePage(page.Url, page.Title)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		respondError(p.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
-	web.Json(w, pageId)
+	web.Json(w, http.StatusOK, map[string]interface{}{"page_id": pageId})
 }
 
 func (p *Page) Get(w http.ResponseWriter, r *http.Request) {
 	pageId := chi.URLParam(r, "pageId")
 	page, err := p.store.GetPage(pageId)
 	if err != nil {
-		if err == store.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
+		if errors.Is(err, store.ErrNotFound) {
+			respondError(p.logger, w, http.StatusNotFound, err.Error())
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		respondError(p.logger, w, http.StatusInternalServerError, err.Error())
 	}
 
-	web.Json(w, page)
+	web.Json(w, http.StatusOK, map[string]interface{}{"page": page})
 }
