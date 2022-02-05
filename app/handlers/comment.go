@@ -7,8 +7,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oussama4/commentify/base/validate"
 	"github.com/oussama4/commentify/base/web"
-	"github.com/oussama4/commentify/store"
+	"github.com/oussama4/commentify/business/data/store"
 )
 
 type Comment struct {
@@ -21,6 +22,16 @@ type CommentInput struct {
 	UserId   string `json:"user_id"`
 	PageId   string `json:"page_id"`
 	Body     string `json:"body"`
+}
+
+func (ci *CommentInput) valid() error {
+	v := validate.New()
+
+	v.Check(ci.UserId != "", "user_id", "user_id is required")
+	v.Check(ci.PageId != "", "page_id", "page_id is required")
+	v.Check(ci.Body != "", "body", "you didn't write a comment")
+
+	return v.Valid()
 }
 
 func (c *Comment) routes() http.Handler {
@@ -37,12 +48,16 @@ func (c *Comment) routes() http.Handler {
 func (c *Comment) Create(w http.ResponseWriter, r *http.Request) {
 	comment := CommentInput{}
 	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
-		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
+		respondError(c.logger, w, http.StatusInternalServerError, err)
+	}
+
+	if err := comment.valid(); err != nil {
+		respondError(c.logger, w, http.StatusUnprocessableEntity, err)
 	}
 
 	commentId, err := c.store.CreateComment(comment.Body, comment.ParentId, comment.UserId, comment.PageId)
 	if err != nil {
-		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
+		respondError(c.logger, w, http.StatusInternalServerError, err)
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"comment_id": commentId})
@@ -53,9 +68,9 @@ func (c *Comment) Get(w http.ResponseWriter, r *http.Request) {
 	comment, err := c.store.GetComment(commentId)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
-			respondError(c.logger, w, http.StatusNotFound, err.Error())
+			respondError(c.logger, w, http.StatusNotFound, err)
 		}
-		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
+		respondError(c.logger, w, http.StatusInternalServerError, err)
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"comment": comment})
@@ -67,12 +82,19 @@ func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
 	pageUrl := web.ReadString(qs, "page_url", "")
 	parentId := web.ReadString(qs, "parent", "")
 	page, _ := web.ReadInt(qs, "page", 0)
-	pageSize, _ := web.ReadInt(qs, "page_size", 0)
+	pageSize, _ := web.ReadInt(qs, "page_size", 10)
+
+	v := validate.New()
+	v.Check(pageId != "" || pageUrl != "", "page_id", "page_id or page_url must be provided")
+	if err := v.Valid(); err != nil {
+		respondError(c.logger, w, http.StatusUnprocessableEntity, err)
+	}
 
 	comments, err := c.store.ListComments(pageId, pageUrl, parentId, page, pageSize)
 	if err != nil {
-		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
+		respondError(c.logger, w, http.StatusInternalServerError, err)
 	}
+
 	web.Json(w, http.StatusOK, map[string]interface{}{"comments": comments})
 }
 
@@ -81,7 +103,7 @@ func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 	pageId := web.ReadString(qs, "page_id", "")
 	count, err := c.store.CountComments(pageId)
 	if err != nil {
-		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
+		respondError(c.logger, w, http.StatusInternalServerError, err)
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"count": count})
@@ -90,7 +112,7 @@ func (c *Comment) Count(w http.ResponseWriter, r *http.Request) {
 func (c *Comment) Delete(w http.ResponseWriter, r *http.Request) {
 	commentId := chi.URLParam(r, "commentId")
 	if err := c.store.DeleteComment(commentId); err != nil {
-		respondError(c.logger, w, http.StatusInternalServerError, err.Error())
+		respondError(c.logger, w, http.StatusInternalServerError, err)
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"deleted": true})
