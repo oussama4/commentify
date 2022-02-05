@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
-	"github.com/oussama4/commentify/model"
-	"github.com/oussama4/commentify/store"
+	"github.com/oussama4/commentify/business/data/model"
+	"github.com/oussama4/commentify/business/data/store"
 	sb "github.com/oussama4/sqlbuilder"
 	"github.com/oussama4/stx/crypto"
 )

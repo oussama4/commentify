@@ -9,7 +9,7 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/oussama4/commentify/app/handlers"
-	"github.com/oussama4/commentify/store/postgres"
+	"github.com/oussama4/commentify/business/data/store/postgres"
 )
 
 func main() {

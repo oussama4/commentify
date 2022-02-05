@@ -1,8 +1,6 @@
 package store
 
-import (
-	"github.com/oussama4/commentify/model"
-)
+import "github.com/oussama4/commentify/business/data/model"
 
 type Store interface {
 	GetComment(id string) (*model.Comment, error)
