@@ -10,7 +10,7 @@ tasks:
       - go run app/*.go {{.CLI_ARGS}}
   goose:
     cmds:
-      - goose -dir ./store/postgres/migrations postgres $DATABASE_URL {{.CLI_ARGS}}
+      - goose -dir ./business/data/schema postgres $DATABASE_URL {{.CLI_ARGS}}
   tidy:
     cmds:
       - go mod tidy
