@@ -9,29 +9,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oussama4/commentify/base/validate"
 	"github.com/oussama4/commentify/base/web"
+	"github.com/oussama4/commentify/business/data/model"
 	"github.com/oussama4/commentify/business/data/store"
 )
 
 type Comment struct {
 	store  store.Store
 	logger *log.Logger
-}
-
-type CommentInput struct {
-	ParentId string `json:"parent_id"`
-	UserId   string `json:"user_id"`
-	PageId   string `json:"page_id"`
-	Body     string `json:"body"`
-}
-
-func (ci *CommentInput) valid() error {
-	v := validate.New()
-
-	v.Check(ci.UserId != "", "user_id", "user_id is required")
-	v.Check(ci.PageId != "", "page_id", "page_id is required")
-	v.Check(ci.Body != "", "body", "you didn't write a comment")
-
-	return v.Valid()
 }
 
 func (c *Comment) routes() http.Handler {
@@ -46,12 +30,12 @@ func (c *Comment) routes() http.Handler {
 }
 
 func (c *Comment) Create(w http.ResponseWriter, r *http.Request) {
-	comment := CommentInput{}
+	comment := model.CommentInput{}
 	if err := json.NewDecoder(r.Body).Decode(&comment); err != nil {
 		respondError(c.logger, w, http.StatusInternalServerError, err)
 	}
 
-	if err := comment.valid(); err != nil {
+	if err := comment.Valid(); err != nil {
 		respondError(c.logger, w, http.StatusUnprocessableEntity, err)
 	}
 
