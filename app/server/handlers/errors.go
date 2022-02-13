@@ -18,6 +18,7 @@ func respondError(l *log.Logger, w http.ResponseWriter, statusCode int, err erro
 			l.Println("ERROR: ", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 		}
+		return
 	}
 	if err := web.Json(w, statusCode, map[string]interface{}{"errors": err.Error()}); err != nil {
 		l.Println("ERROR: ", err.Error())
