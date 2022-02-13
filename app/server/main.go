@@ -8,7 +8,8 @@ import (
 	"os"
 
 	"github.com/ardanlabs/conf/v3"
-	"github.com/oussama4/commentify/app/handlers"
+	"github.com/oussama4/commentify/app/server/handlers"
+	"github.com/oussama4/commentify/business/data/database"
 	"github.com/oussama4/commentify/business/data/store/postgres"
 )
 
@@ -25,10 +26,16 @@ func run(logger *log.Logger) error {
 		Server struct {
 			Addr string `conf:"default:0.0.0.0:8888"`
 		}
-		Store struct {
-			Name string `conf:"default:postgres"`
-			Url  string `conf:"default:postgresql://commentify:password@localhost:5432/commentify?sslmode=disable"`
+		DB struct {
+			User         string `conf:"default:commentify"`
+			Password     string `conf:"default:secret,mask"`
+			Host         string `conf:"default:localhost"`
+			Name         string `conf:"default:commentify"`
+			MaxIdleConns int    `conf:"default:0"`
+			MaxOpenConns int    `conf:"default:0"`
+			DisableTLS   bool   `conf:"default:true"`
 		}
+		Store string `conf:"default:postgres"`
 	}{}
 
 	help, err := conf.Parse("", &cfg)
@@ -41,7 +48,12 @@ func run(logger *log.Logger) error {
 	}
 
 	// database
-	store, err := postgres.Create(cfg.Store.Url)
+	db, err := database.Open(database.Config(cfg.DB))
+	if err != nil {
+		return err
+	}
+
+	store, err := postgres.Create(db)
 	if err != nil {
 		return err
 	}
