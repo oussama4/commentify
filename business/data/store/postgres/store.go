@@ -3,7 +3,6 @@ package postgres
 import (
 	"database/sql"
 
-	_ "github.com/lib/pq"
 	"github.com/oussama4/commentify/business/data/model"
 	"github.com/oussama4/commentify/business/data/store"
 	sb "github.com/oussama4/sqlbuilder"
@@ -14,11 +13,7 @@ type PostgresStore struct {
 	db *sql.DB
 }
 
-func Create(dsn string) (store.Store, error) {
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		return nil, err
-	}
+func Create(db *sql.DB) (store.Store, error) {
 	s := &PostgresStore{db: db}
 	return s, nil
 }
