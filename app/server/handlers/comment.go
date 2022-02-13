@@ -72,11 +72,13 @@ func (c *Comment) List(w http.ResponseWriter, r *http.Request) {
 	v.Check(pageId != "" || pageUrl != "", "page_id", "page_id or page_url must be provided")
 	if err := v.Valid(); err != nil {
 		respondError(c.logger, w, http.StatusUnprocessableEntity, err)
+		return
 	}
 
 	comments, err := c.store.ListComments(pageId, pageUrl, parentId, page, pageSize)
 	if err != nil {
 		respondError(c.logger, w, http.StatusInternalServerError, err)
+		return
 	}
 
 	web.Json(w, http.StatusOK, map[string]interface{}{"comments": comments})
