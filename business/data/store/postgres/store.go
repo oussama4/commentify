@@ -160,9 +160,10 @@ func (s *PostgresStore) ListPages(page int, pageSize int) ([]model.Page, error) 
 	return out, nil
 }
 
-func (s *PostgresStore) ListComments(pageId string, pageUrl string, parentId string, page int, pageSize int) ([]model.Comment, error) {
-	qb := sb.Select("c.id", "c.body", "c.parent_id", "c.user_id", "c.created_at", "p.id", "p.url").
+func (s *PostgresStore) ListComments(pageId string, pageUrl string, parentId string, page int, pageSize int) ([]model.CommentOutput, error) {
+	qb := sb.Select("c.id", "c.body", "c.created_at", "u.id", "u.name", "u.email", "p.id", "p.url").
 		From("comments c").
+		Join("users u", sb.Expr("c.user_id = u.id")).
 		Join("pages p", sb.Expr("c.page_id = p.id"))
 
 	if pageId != "" {
@@ -177,22 +178,21 @@ func (s *PostgresStore) ListComments(pageId string, pageUrl string, parentId str
 	return s.listComments(q, args...)
 }
 
-func (s *PostgresStore) listComments(query string, dest ...interface{}) ([]model.Comment, error) {
+func (s *PostgresStore) listComments(query string, dest ...interface{}) ([]model.CommentOutput, error) {
 	rows, err := s.db.Query(query, dest...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	out := make([]model.Comment, 0)
+	out := make([]model.CommentOutput, 0)
 	for rows.Next() {
-		parentId := sql.NullString{}
 		pageUrl := ""
-		o := model.Comment{}
-		if err := rows.Scan(&o.Id, &o.Body, &parentId, &o.UserId, &o.CreatedAt, &o.PageId, &pageUrl); err != nil {
+		pageId := ""
+		o := model.CommentOutput{}
+		if err := rows.Scan(&o.Id, &o.Body, &o.CreatedAt, &o.Author.Id, &o.Author.Name, &o.Author.Email, &pageId, &pageUrl); err != nil {
 			return nil, err
 		}
-		o.ParentId = parentId.String
 		out = append(out, o)
 	}
 
