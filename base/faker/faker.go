@@ -59,9 +59,9 @@ func Sentence() string {
 	s := ""
 	count := rand.Intn(10) + 1
 	for i := 0; i < count; i++ {
-		s += randomStringSliceElement(wordList)
+		s += Word() + " "
 	}
-	return fmt.Sprintf("%s.", s)
+	return fmt.Sprintf("%s. ", s)
 }
 
 func Paragraph() string {
