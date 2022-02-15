@@ -21,7 +21,7 @@ type CommentOutput struct {
 	Id        string `json:"id"`
 	Body      string `json:"body"`
 	CreatedAt string `json:"createdAt"`
-	Author    User   `json:"user"`
+	Author    User   `json:"author"`
 }
 
 func (ci *CommentInput) Valid() error {

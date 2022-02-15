@@ -10,7 +10,7 @@
     }
 </script>
 
-  <div class="md:w-1/3 mx-auto mt-5">
+  <div>
     <textarea on:input="{onInput}" bind:this="{commentInput}" name="comment" rows="3" placeholder="Write your comment"
     class="overflow-hidden shadow-sm px-3 py-3 block w-full text-base font-normal focus:outline-none border border-slate-200 resize-none rounded-md"
     ></textarea>
