@@ -13,6 +13,7 @@ type Store interface {
 	ListPages(page int, pageSize int) ([]model.Page, error)
 	CreatePage(url, title string) (string, error)
 	GetUser(id string) (*model.User, error)
+	GetOrCreateGuest(name string) (string, error)
 	ListUsers(page int, pageSize int) ([]model.User, error)
 	CreateUser(name, email string) (string, error)
 }

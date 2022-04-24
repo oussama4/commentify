@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS comments (
+    id VARCHAR(64) PRIMARY KEY,
+    body TEXT NOT NULL,
+    parent_id VARCHAR(64),
+    user_id VARCHAR(64) NOT NULL,
+	page_id VARCHAR(64) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (page_id) REFERENCES pages (id) ON DELETE CASCADE
+);

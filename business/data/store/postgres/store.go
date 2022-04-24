@@ -79,6 +79,33 @@ func (s *PostgresStore) GetUser(id string) (*model.User, error) {
 	return u, nil
 }
 
+func (s *PostgresStore) getUserByName(name string) (*model.User, error) {
+	q, args := sb.Select().From("users").Where(sb.Eq("name", name)).Query()
+	u := &model.User{}
+	if err := s.db.QueryRow(q, args...).Scan(&u.Id, &u.Name, &u.Email); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (s *PostgresStore) GetOrCreateGuest(name string) (string, error) {
+	u, err := s.getUserByName(name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			id := crypto.Token(21)
+			id = "guest_" + id
+			q, args := sb.Insert("users").Columns("id", "name").Values(&id, &name).Query()
+			_, err := s.db.Exec(q, args...)
+			if err != nil {
+				return "", err
+			}
+			return id, nil
+		}
+		return "", err
+	}
+	return u.Id, nil
+}
+
 func (s *PostgresStore) CreateUser(name, email string) (string, error) {
 	id := crypto.Token(21)
 	q, args := sb.Insert("users").Columns("id", "name", "email").Values(&id, &name, &email).Query()
@@ -123,7 +150,7 @@ func (s *PostgresStore) DeleteComment(id string) error {
 }
 
 func (s *PostgresStore) GetPage(id string) (*model.Page, error) {
-	q, args := sb.Select().From("pages").Where(sb.Eq("id", id)).Query()
+	q, args := sb.Select("id", "url", "title").From("pages").Where(sb.Eq("id", id)).Query()
 	p := &model.Page{}
 	err := s.db.QueryRow(q, args...).Scan(&p.Id, &p.Url, &p.Title)
 	if err != nil {

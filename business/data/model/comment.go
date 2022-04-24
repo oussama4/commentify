@@ -1,6 +1,10 @@
 package model
 
-import "github.com/oussama4/commentify/base/validate"
+import (
+	"strings"
+
+	"github.com/oussama4/commentify/base/validate"
+)
 
 type Comment struct {
 	Id        string `json:"id"`
@@ -12,6 +16,7 @@ type Comment struct {
 }
 type CommentInput struct {
 	ParentId string `json:"parent_id"`
+	Guest    string `jspn:"guest"`
 	UserId   string `json:"user_id"`
 	PageId   string `json:"page_id"`
 	Body     string `json:"body"`
@@ -27,9 +32,9 @@ type CommentOutput struct {
 func (ci *CommentInput) Valid() error {
 	v := validate.New()
 
-	v.Check(ci.UserId != "", "user_id", "user_id is required")
+	v.Check(ci.UserId != "" && strings.TrimSpace(ci.Guest) == "", "user_id", "user_id is required")
 	v.Check(ci.PageId != "", "page_id", "page_id is required")
-	v.Check(ci.Body != "", "body", "you didn't write a comment")
+	v.Check(strings.TrimSpace(ci.Body) != "", "body", "you didn't write a comment")
 
 	return v.Valid()
 }

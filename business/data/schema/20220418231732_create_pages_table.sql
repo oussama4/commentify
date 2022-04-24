@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS pages (
+	id VARCHAR(64) PRIMARY KEY,
+    page_id VARCHAR(255),
+	url TEXT NOT NULL,
+	title TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
