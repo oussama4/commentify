@@ -16,14 +16,14 @@ func NewSeed(db *sql.DB) *Seed {
 }
 
 func (s *Seed) Synopsis() string {
-	return "seed	seed the database with initial data"
+	return "seed the database with initial data"
 }
 
 func (s *Seed) Help() string {
 	return "seed the database with initial data"
 }
 
-func (s *Seed) Run() error {
+func (s *Seed) Run(args []string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return fmt.Errorf("transaction error %w", err)
