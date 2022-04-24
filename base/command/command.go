@@ -9,7 +9,7 @@ import (
 type Command interface {
 	Synopsis() string
 	Help() string
-	Run() error
+	Run(args []string) error
 }
 
 type Commander struct {
@@ -32,27 +32,31 @@ func (c *Commander) Register(name string, cmd Command) {
 
 func (c *Commander) Run() error {
 	if len(os.Args) > 1 {
-		for k, cmd := range c.commands {
-			if k == os.Args[1] {
-				if len(os.Args) > 2 {
-					if os.Args[2] == "-h" || os.Args[2] == "--help" {
-						fmt.Println(cmd.Help())
-						return nil
-					}
-				}
-				return cmd.Run()
+		for name, cmd := range c.commands {
+			if name == os.Args[1] {
+				return cmd.Run(os.Args[2:])
 			}
 		}
 	}
-	if os.Args[1] == "-h" || os.Args[1] == "--help" {
+	if os.Args[1] == "help" {
 		c.Usage()
 	}
 	return nil
 }
 
 func (c *Commander) Usage() {
+	if len(os.Args) > 2 {
+		cmd, ok := c.commands[os.Args[2]]
+		if !ok {
+			fmt.Printf("command %s does not exist", os.Args[2])
+			return
+		}
+		fmt.Println(cmd.Help())
+		return
+	}
+
 	fmt.Printf("  %s <command> [args]\n\n", c.name)
-	for _, cmd := range c.commands {
-		fmt.Printf("\t%s", cmd.Synopsis())
+	for name, cmd := range c.commands {
+		fmt.Printf("\t%s\t%s\n", name, cmd.Synopsis())
 	}
 }
