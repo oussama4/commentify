@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/oussama4/commentify/app/admin/commands"
@@ -40,8 +41,13 @@ func main() {
 	}
 
 	commander := command.New("admin")
-	s := commands.NewSeed(db)
-	commander.Register("seed", s)
+	projectDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	commander.Register("seed", commands.NewSeed(db))
+	commander.Register("create:migration", commands.NewCreateMigration(filepath.Join(projectDir, "business/data/schema")))
+	commander.Register("migrate", commands.NewMigrateCommand(filepath.Join(projectDir, "business/data/schema"), db))
 	if err := commander.Run(); err != nil {
 		log.Fatal(err)
 	}
